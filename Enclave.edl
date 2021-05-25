@@ -1,0 +1,108 @@
+/*
+ * Copyright (C) 2011-2018 Intel Corporation. All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ *   * Redistributions of source code must retain the above copyright
+ *     notice, this list of conditions and the following disclaimer.
+ *   * Redistributions in binary form must reproduce the above copyright
+ *     notice, this list of conditions and the following disclaimer in
+ *     the documentation and/or other materials provided with the
+ *     distribution.
+ *   * Neither the name of Intel Corporation nor the names of its
+ *     contributors may be used to endorse or promote products derived
+ *     from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ */
+
+/* Enclave.edl - Top EDL file. */
+
+/*
+*EDL Language Guide:
+*
+*FOR ECALLS:
+*[in]: 
+*The buffer is copied from the application into the enclave. 
+*Changes will only affect the buffer inside the enclave. 
+*
+*[out]: 
+*A buffer will be allocated inside the enclave and initialized with zeros. 
+*It will be copied to the original buffer when the ECALL exits.
+*
+*[in, out]:
+*Data is copied back and forth.
+*
+*[user_check]:
+*The pointer is not checked. 
+*The raw address is passed.
+*
+*FOR OCALLS:
+*[in]:
+*The buffer is copied from the enclave to the application. 
+*Changes will only affect the buffer outside the enclave.
+*
+*[out]:
+*A buffer will be allocated outside the enclave and initialized with zeros. 
+*This untrusted buffer will be copied to the original buffer in the enclave when the OCALL exits.
+*
+*[in, out]:
+*Data is copied back and forth.
+*
+*[user_check]:
+*The pointer is not checked.
+*The raw address is passed.
+*
+*The following types are supported:
+*char, short, long, int, float, double, void, int8_t,
+*int16_t, int32_t, int64_t, size_t, wchar_t, uint8_t,
+*uint16_t, uint32_t, uint64_t, unsigned, struct, enum,
+*union
+*
+*Links:
+*https://download.01.org/intel-sgx/linux-1.9/docs/Intel_SGX_SDK_Developer_Reference_Linux_1.9_Open_Source.pdf
+*https://shawn233.github.io/2019/08/24/Intel-SGX-Enclave-Definition-Language/
+*/
+
+enclave {
+    
+    /* Import ECALL/OCALL from sub-directory EDLs.
+     *  [from]: specifies the location of EDL file. 
+     *  [import]: specifies the functions to import. 
+     *  [*]: implies to import all functions.
+     */
+   
+
+ 
+    trusted {
+        public void printf_helloworld();
+        public void add_in_enclave(int num1, int num2, [out, size=len] int *sum, uint32_t len);
+		public float forward_in_enclave([out, size=len] float * x,uint32_t len, int x_width, int x_height);
+		public float relu_in_enclave([out, size=len] float * x, uint32_t len, int x_width, int x_height);
+		public float softmax_in_enclave([out, size=len] float * x, uint32 len, int x_size, int y_size);
+		
+    };
+
+    /* 
+     * ocall_print_string - invokes OCALL to display string buffer inside the enclave.
+     *  [in]: copy the string buffer to App outside.
+     *  [string]: specifies 'str' is a NULL terminated buffer.
+     */
+    untrusted {
+        void ocall_print_string([in, string] const char *str);
+    };
+
+};
